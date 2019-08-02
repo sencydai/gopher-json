@@ -65,6 +65,14 @@ var (
 
 // Encode returns the JSON encoding of value.
 func Encode(value lua.LValue) ([]byte, error) {
+	// converted := value.(*lua.LTable)
+	// obj := make(map[string]jsonValue)
+	// converted.ForEach(func(k lua.LValue, v lua.LValue) {
+	// 	obj[k.String()] = jsonValue{v, make(map[*lua.LTable]bool)}
+	// })
+
+	// return json.Marshal(obj)
+
 	return json.Marshal(jsonValue{
 		LValue:  value,
 		visited: make(map[*lua.LTable]bool),
@@ -105,16 +113,23 @@ func (j jsonValue) MarshalJSON() (data []byte, err error) {
 			i, numberKey := k.(lua.LNumber)
 			if numberKey && obj == nil {
 				index := int(i) - 1
-				if index != len(arr) {
-					// map out of order; convert to map
-					obj = make(map[string]jsonValue)
-					for i, value := range arr {
-						obj[strconv.Itoa(i+1)] = value
-					}
-					obj[strconv.Itoa(index+1)] = jsonValue{v, j.visited}
-					return
+				// if index != len(arr) {
+				// 	// map out of order; convert to map
+				// 	obj = make(map[string]jsonValue)
+				// 	for i, value := range arr {
+				// 		obj[strconv.Itoa(i+1)] = value
+				// 	}
+				// 	obj[strconv.Itoa(index+1)] = jsonValue{v, j.visited}
+				// 	return
+				// }
+				// arr = append(arr, jsonValue{v, j.visited})
+				// return
+
+				obj = make(map[string]jsonValue)
+				for i, value := range arr {
+					obj[strconv.Itoa(i+1)] = value
 				}
-				arr = append(arr, jsonValue{v, j.visited})
+				obj[strconv.Itoa(index+1)] = jsonValue{v, j.visited}
 				return
 			}
 			if obj == nil {
